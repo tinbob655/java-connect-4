@@ -20,8 +20,6 @@ public final class Human extends Player {
     public Move turn(GameState state) {
 
         Set<Move> legalMoves = state.getLegalMoves();
-
-        uiHandler.displayState(state);
         uiHandler.sendMessage("Please choose which column to place a token in (0 - 6):");
 
         int chosenColumn = uiHandler.getColumnInput();

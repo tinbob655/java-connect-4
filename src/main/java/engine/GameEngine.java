@@ -5,6 +5,7 @@ import model.Slot;
 import model.state.GameState;
 import model.state.Move;
 import player.Player;
+import ui.UIProxy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public final class GameEngine implements EngineAPI {
     private static final Board board = new Board();
     private GameState gameState;
     private final List<Player> players = new ArrayList<>();
+    private static final UIProxy uiHandler = new UIProxy();
     private int turnIndex;
 
     public GameEngine() {
@@ -54,6 +56,8 @@ public final class GameEngine implements EngineAPI {
     public void turn() {
 
         //does a turn in the game
+
+        uiHandler.displayState(this.gameState);
 
         //get the move we want to do
         Player currentPlayer = this.players.get(this.turnIndex);
