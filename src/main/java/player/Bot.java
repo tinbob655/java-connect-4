@@ -2,18 +2,22 @@ package player;
 
 import model.Board;
 import model.Coordinate;
+import model.Pair;
 import model.Slot;
 import model.state.GameState;
 import model.state.Move;
 import ui.UIProxy;
-
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Bot extends Player {
 
-    private static final int MINIMAX_DEPTH = 8;
+    private static final int MINIMAX_DEPTH = 11;
+    private final ExecutorService threadPool = Executors.newWorkStealingPool();
     private static final UIProxy uiHandler = new UIProxy();
     private Player opponent;
+    private final AtomicInteger globalAlpha = new AtomicInteger(Integer.MIN_VALUE);
 
     public Bot(Slot colour) {
         super(colour);
@@ -47,24 +51,42 @@ public class Bot extends Player {
         );
         sortedMoves.addAll(state.getLegalMoves());
 
-        //do minimax on each move
-        Move bestMove = sortedMoves.peek();
-        int bestScore = Integer.MIN_VALUE;
+        //queue jobs on the thread pool
+        List<Future<Pair<Move, Integer>>> tasks = new ArrayList<>();
         for (Move move : sortedMoves) {
 
-            //pretend we did the move
-            Board newBoard = state.board().duplicate();
-            newBoard.setSlotAt(move.target(), move.commencedBy().getColour());
-            GameState newState = new GameState(newBoard, this.opponent);
+            //create a job
+            tasks.add(this.threadPool.submit(() -> {
 
-            int rank = this.minimax(newState, MINIMAX_DEPTH -1, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if (rank > bestScore) {
+                //pretend we did the move
+                Board newBoard = state.board().duplicate();
+                newBoard.setSlotAt(move.target(), move.commencedBy().getColour());
+                GameState newState = new GameState(newBoard, opponent);
 
-                //we found a new best move
-                bestMove = move;
-                bestScore = rank;
+                int score = this.minimax(newState, MINIMAX_DEPTH -1, false, this.globalAlpha.get(), Integer.MAX_VALUE);
+                this.globalAlpha.updateAndGet(current -> Math.max(current, score));
+                return new Pair<>(move, score);
+            }));
+        }
+
+        //execute the futures
+        int best = Integer.MIN_VALUE;
+        Move bestMove = sortedMoves.peek();
+        try {
+            for (Future<Pair<Move, Integer>> t : tasks) {
+                Pair<Move, Integer> result = t.get();
+
+                //if we found the new best move
+                if (result.right() > best) {
+                    bestMove = result.left();
+                    best = result.right();
+                }
             }
         }
+        catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         return bestMove;
     }
 
