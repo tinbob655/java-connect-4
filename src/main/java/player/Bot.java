@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Bot extends Player {
 
-    private static final int MINIMAX_DEPTH = 11;
+    private static final int MINIMAX_DEPTH = 12;
     private final ExecutorService threadPool = Executors.newWorkStealingPool();
     private static final UIProxy uiHandler = new UIProxy();
     private Player opponent;
