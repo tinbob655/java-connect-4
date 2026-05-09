@@ -105,4 +105,32 @@ public class Board {
 
         return res.toString();
     }
+
+    //equality
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Board b)) {
+            return false;
+        }
+
+        //check each cell of each board is equal
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int column = 0; column < GRID_COLUMNS; column++) {
+
+                Coordinate c = new Coordinate(column, row);
+                if (this.grid[row][column] != b.getSlotAt(c)) {
+
+                    //missmatch
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(this.grid);
+    }
 }

@@ -6,6 +6,7 @@ import model.Slot;
 import player.Player;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,6 +25,10 @@ public final class GameState {
 
     public Board board() {
         return this.board;
+    }
+
+    public Player getCurrentPlayer() {
+        return this.currentPlayer;
     }
 
     public Set<Move> getLegalMoves() {
@@ -99,5 +104,22 @@ public final class GameState {
             }
         }
         return Optional.empty();
+    }
+
+    //equality
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GameState s)) {
+            return false;
+        }
+        return (
+                (this.board.equals(s.board()))
+                && (this.currentPlayer.equals(s.getCurrentPlayer()))
+                && (this.winner.equals(s.getWinner()))
+                );
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.board, this.currentPlayer, this.winner);
     }
 }
