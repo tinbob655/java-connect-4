@@ -1,0 +1,3 @@
+Connect-4 game made in Java with a simple Swing-based UI.
+
+You won't beat the AI, but you're welcome to try anyway...
